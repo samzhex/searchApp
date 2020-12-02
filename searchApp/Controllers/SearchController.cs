@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Search;
 
-namespace searchApp.Controllers
-{ 
+namespace Search.App.Controllers
+{
     [ApiController]
     [Route("[controller]")]
-    public class SearchController : ControllerBase
+    public class SearchController : Controller
     {
+        private readonly ISearchService _searchService;
 
-        [HttpGet]
-        public IEnumerable<Search> Get()
+        public SearchController(ISearchService searchService)
         {
-            return new[] {
-                new Search { Id = 1, Name = "Chop Suey"},
-                new Search { Id = 2, Name = "Toxicity" }
-            };
+            _searchService = searchService;
         }
+
 
         [HttpGet("{query}")]
         public IActionResult Get(string query)
@@ -29,14 +26,13 @@ namespace searchApp.Controllers
                 return BadRequest();
             }
 
-            var items = Get();
-            var result = items.Any(i => i.Name.ToLower() == query.ToLower());
+            var result = _searchService.GetResult(query);
 
-            if(result)
+            if(result != null)
             {
                 return Ok(query);
             }
-            return NotFound();
+            return NoContent();
 
         }
     }
